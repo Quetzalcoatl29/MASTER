@@ -1,5 +1,4 @@
 
-/*Prolog v 0.1 family Lanister got*/
 /*Hechos */
 /*Sexo*/
 mujer(joanna).
@@ -34,6 +33,8 @@ lanister(willem).
 /*Padres*/
 papa_de(tytos,tywin).
 papa_de(jeyne,tywin).
+papa_de(tytos,kevan).
+papa_de(jeyne,kevan).
 papa_de(tywin,jaime).
 papa_de(tywin,cersei).
 papa_de(tywin, tyrion).
@@ -58,55 +59,70 @@ papa_de(cersei, myrcela).
 
 /* Reglas de predicados  Unificaciones*/
 
+madre(A, B) :-
+    papa_de(A, B),
+    mujer(A).
+padre(A, B) :-
+    papa_de(A, B),
+    hombre(A).
+hijo(A, B) :-
+    papa_de(B, A).
+
 abuelos(A, B) :-
     papa_de(A, C),
     papa_de(C, B).
 
-padre_de(A,B):- hombre(A),
-    papa_de(A,B).
-
-madre_de(A,B):- mujer(A),
-    papa_de(A,B).
-
-abuelo_de(A,B):- hombre(A),
-    papa_de(A,C),
-    papa_de(C,B).
-
-abuela_de(A,B):- mujer(A),
-    papa_de(A,C),
-    papa_de(C,B).
-
 nietos(A, B) :-
     abuelos(B, A).
 
-hermana_de(A,B):- 
-    mujer(A),
-    padre_de(D, B), padre_de(D,A),A \= B.%tiene éxito si A y B no se unifican; es decir, si no (A = B)
-
-hermana_de(A,B):- mujer(A),
-    madre_de(E, B), madre_de(E,A),A \= B.
-
-tia_de(A,B):- mujer(A),
-    papa_de(C,B), hermana_de(C,A),!.
-
-hermano_de(A,B):- 
-    hombre(A),
-    padre_de(D, B), padre_de(D,A),A \= B.
-
-hermano_de(A,B):- hombre(A),
-    madre_de(E, B), madre_de(E,A),A \= B.
+abuelo(A, B) :-
+    abuelos(A, B),
+    hombre(A).
+abuela(A, B) :-
+    abuelos(A, B),
+    mujer(A).
+hijo_de(A, B) :-
+    hijo(A, B),
+    hombre(A).
+hija(A, B) :-
+    hijo(A, B),
+    mujer(A).
 
 hermanos(A, B) :-
     papa_de(C, A),
     papa_de(C, B),
+    A \= B. %tiene éxito si A y B no se unifican; es decir, si no (A = B)
+hermana(A, B) :-
+    hermanos(A, B),
+    mujer(A),
+    A \= B.
+hermano(A, B) :-
+    hermanos(A, B),
+    hombre(A),
     A \= B.
 
-primos(A, B) :-
+tio(A, B) :-
+    hermano(A, C),
+    hijo_de(B, C).
+tia(A, B) :-
+    hermana(A, C),
+    hija(B, C).
+primo(A, B) :-
     abuelos(C, A),
     abuelos(C, B),
     \+hermanos(A, B),
     A \= B.
 
+sobrino(A, B) :-
+    tio(B, A),
+    hombre(A);
+    tio(B, A),
+    hombre(A).
+sobrina(A, B) :-
+    tia(B, A),
+    mujer(A);
+    tio(B, A),
+    mujer(A).
 
 tio_de(A,B):- hombre(A),
     papa_de(C,B), hermano_de(C,A).
@@ -123,4 +139,19 @@ list_hermanos(A, L) :-  /*me da la lista*/
 list_abuelos(A, L) :-  /*me da la lista*/
     findall(B, abuelos(B, A), L).
 
+list_sobrinos(A, L) :-  /*me da la lista*/
+    findall(B, sobrino(B, A), L).
+
+list_sobrinas(A, L) :-  /*me da la lista*/
+    findall(B, sobrina(B, A), L).
+
+list_tios(A, L) :-  /*me da la lista*/
+    findall(B, tio(B, A), L).
+
+list_tias(A, L) :-  /*me da la lista*/
+    findall(B, tia(B, A), L).
+
+
 miembro_casa(A):- lanister(A).
+
+    
